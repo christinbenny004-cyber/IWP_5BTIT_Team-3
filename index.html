@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Login - Project Evaluation System</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+	<link href="/assets/css/style.css" rel="stylesheet">
+	<link href="/assets/css/auth.css" rel="stylesheet">
+	<link href="/assets/css/templatemo-neural-style.css" rel="stylesheet">
+</head>
+<body class="auth-hero">
+	<!-- Background Image -->
+	<div class="auth-background"></div>
+	
+	<!-- Floating Elements -->
+	<div class="floating-shapes">
+		<div class="shape shape-1"></div>
+		<div class="shape shape-2"></div>
+		<div class="shape shape-3"></div>
+		<div class="shape shape-4"></div>
+	</div>
+
+	<div class="container">
+		<div class="row justify-content-center">
+			<div class="col-md-5">
+				<div class="card auth-card shadow-lg">
+					<div class="card-body p-5">
+						<!-- Application Logo and Name -->
+						<div class="text-center mb-4">
+							<div class="app-logo mb-3">
+								<i class="fas fa-project-diagram"></i>
+							</div>
+							<h1 class="app-title mb-2">Project Evaluation System</h1>
+							<p class="app-subtitle">Streamline your project management workflow</p>
+						</div>
+						
+						<h3 class="mb-4 text-center auth-title">Welcome Back</h3>
+						<form id="loginForm" novalidate>
+							<div class="mb-3">
+								<label class="form-label">Email</label>
+								<input type="email" class="form-control" id="email" required>
+								<div class="invalid-feedback">Please enter a valid email.</div>
+							</div>
+							<div class="mb-3">
+								<label class="form-label">Password</label>
+								<input type="password" class="form-control" id="password" minlength="6" required>
+								<div class="invalid-feedback">Min 6 characters.</div>
+							</div>
+							<button class="btn btn-primary w-100 btn-login" type="submit">
+								<i class="fas fa-sign-in-alt me-2"></i>Login
+							</button>
+							<p class="mt-4 text-center">
+								No account? <a href="/pages/signup.html" class="auth-link">Sign up here</a>
+							</p>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script>
+	const form = document.getElementById('loginForm');
+	form.addEventListener('submit', async (e) => {
+		e.preventDefault();
+		form.classList.add('was-validated');
+		if (!form.checkValidity()) return;
+		const email = document.getElementById('email').value;
+		const password = document.getElementById('password').value;
+		try {
+			const res = await fetch('/api/auth/login', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				credentials: 'include',
+				body: JSON.stringify({ email, password })
+			});
+			if (!res.ok) { const data = await res.json(); alert(data.message || 'Login failed'); return; }
+			const data = await res.json();
+			if (data.role === 'admin') window.location.href = '/pages/admin_dashboard.html';
+			else if (data.role === 'leader') window.location.href = '/pages/leader_team_dashboard.html';
+			else window.location.href = '/pages/member_dashboard.html';
+		} catch (err) {
+			alert('Network error');
+		}
+	});
+	</script>
+</body>
+</html>
