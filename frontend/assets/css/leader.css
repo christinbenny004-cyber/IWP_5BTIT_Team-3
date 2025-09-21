@@ -1,0 +1,11 @@
+/* Leader pages */
+.project-card { border-left: 3px solid var(--pes-accent); }
+.project-card .progress { height: 10px; }
+.module-item { background: rgba(2,6,23,0.4); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 10px; }
+.task-item { border-bottom: 1px dashed rgba(255,255,255,0.08); padding: 6px 0; }
+
+/* Improve text contrast on leader pages */
+body, .container, .card, .card-body, .navbar, .table, label, .form-label { color: var(--pes-text) !important; }
+.form-control, .form-select { color: var(--pes-text) !important; }
+.form-select option { color: #0b1220; background: #ffffff; }
+.badge { color: var(--pes-text) !important; }

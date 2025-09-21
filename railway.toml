@@ -1,0 +1,19 @@
+# Configure your build and run commands
+[build]
+  builder = "nixpacks"
+  buildCommand = "npm install"
+  startCommand = "npm start"
+
+# Configure your environment variables
+[deploy]
+  startCommand = "npm run seed && npm start"
+
+# Configure health checks
+[[checks]]
+  name = "HTTP Check"
+  type = "http"
+  path = "/"
+  interval = "30s"
+  timeout = "5s"
+  maxRetries = 3
+  initialDelay = "10s"

@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Leader Team Dashboard</title>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+	<style>
+		body {
+			min-height: 100vh;
+			background-image: url('https://images.unsplash.com/photo-1508780709619-79562169bc64?auto=format&fit=crop&w=1950&q=80');
+			background-size: cover;
+			background-position: center;
+			background-attachment: fixed;
+			color: #f8f9fa;
+			font-family: 'Segoe UI', sans-serif;
+		}
+		body::before {
+			content: '';
+			position: fixed;
+			inset: 0;
+			background: linear-gradient(180deg, rgba(0,0,0,0.6), rgba(0,0,0,0.85));
+			z-index: -1;
+		}
+		.navbar {
+			background: rgba(0,123,255,0.85) !important;
+			backdrop-filter: blur(6px);
+			box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+		}
+		.glass {
+			background: rgba(255,255,255,0.08);
+			backdrop-filter: blur(10px);
+			border:1px solid rgba(255,255,255,0.15);
+			border-radius: 16px;
+			box-shadow: 0 12px 36px rgba(0,0,0,0.4);
+			padding: 20px;
+			transition: transform 0.2s ease, box-shadow 0.2s ease;
+		}
+		.glass:hover {
+			transform: translateY(-4px);
+			box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+		}
+		.section-title {
+			font-weight: 700;
+			border-bottom: 1px solid rgba(255,255,255,0.3);
+			padding-bottom: 4px;
+			margin-bottom: 12px;
+		}
+		.badge-role {
+			background: rgba(255,255,255,0.2);
+			color: #fff;
+			font-weight: 500;
+		}
+		.list-group-item {
+			background: rgba(255,255,255,0.05);
+			border: 1px solid rgba(255,255,255,0.15);
+			border-radius: 8px;
+			margin-bottom: 6px;
+			cursor: pointer;
+			transition: background 0.2s ease;
+		}
+		.list-group-item:hover {
+			background: rgba(255,255,255,0.1);
+		}
+		.card .badge {
+			margin-top: 6px;
+		}
+		select.form-select, .btn {
+			border-radius: 8px;
+			background: #ffffff;
+			color: #212529;
+			border: 1px solid rgba(0,0,0,0.2);
+		}
+
+		/* Modal styles */
+		.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center;z-index:1050;}
+		.modal-card{background:#fff;color:#212529;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,0.5);max-width:800px;width:90%;max-height:80vh;display:flex;flex-direction:column;overflow:hidden;}
+		.modal-header{padding:12px 16px;border-bottom:1px solid #e9ecef;display:flex;align-items:center;justify-content:space-between}
+		.modal-body{padding:12px 16px;overflow:auto}
+		.modal-footer{padding:12px 16px;border-top:1px solid #e9ecef;display:flex;justify-content:flex-end;gap:8px}
+		.table-sm td,.table-sm th{padding:.35rem}
+	</style>
+</head>
+<body>
+	<nav class="navbar navbar-dark">
+		<div class="container-fluid">
+			<a class="navbar-brand" href="#">Team Dashboard</a>
+			<div class="d-flex gap-2">
+				<a class="btn btn-outline-light" href="/pages/admin_dashboard.html">Back</a>
+				<button class="btn btn-light" id="logoutBtn">Logout</button>
+			</div>
+		</div>
+	</nav>
+
+	<div class="container my-4">
+		<div class="row g-3">
+			<div class="col-12">
+				<div class="glass">
+					<h5 class="section-title mb-3">Your Team
+						<button id="refreshMembers" class="btn btn-sm btn-outline-light float-end">Refresh</button>
+					</h5>
+					<div class="row g-2 align-items-end mb-3">
+						<div class="col-md-12 d-flex justify-content-end">
+							<button id="addMemberBtn" class="btn btn-primary">Add Member</button>
+						</div>
+					</div>
+					<div id="members" class="list-group"></div>
+				</div>
+			</div>
+		</div>
+
+		<div class="row g-3 mt-3">
+			<div class="col-12">
+				<div class="glass">
+					<h5 class="section-title mb-3">Member Tasks</h5>
+					<div id="memberTasks" class="row g-2"></div>
+				</div>
+			</div>
+		</div>
+
+		<div class="row g-3 mt-3">
+			<div class="col-12">
+				<div class="glass">
+					<h5 class="section-title mb-3">Team Projects
+						<button id="refreshTeamProjects" class="btn btn-sm btn-outline-light float-end">Refresh</button>
+					</h5>
+					<div id="teamProjects" class="row g-3"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Add Member Modal -->
+	<div id="addMemberModal" class="modal-overlay">
+		<div class="modal-card">
+			<div class="modal-header">
+				<h6 class="m-0">Add Team Members</h6>
+				<button class="btn btn-sm btn-outline-secondary" id="closeAddModal">Close</button>
+			</div>
+			<div class="modal-body">
+				<div class="row g-2 mb-2">
+					<div class="col-md-6"><input id="userSearch" class="form-control" placeholder="Search by name or email"></div>
+					<div class="col-md-6 text-end d-flex align-items-center justify-content-end gap-2">
+						<button class="btn btn-sm btn-outline-secondary" id="clearUserSearch">Clear</button>
+						<span class="small text-muted" id="availCount"></span>
+					</div>
+				</div>
+				<div class="table-responsive">
+					<table class="table table-sm table-striped" id="availUsersTable">
+						<thead><tr><th>Name</th><th>Email</th><th>Role</th><th style="width:1%"></th></tr></thead>
+						<tbody></tbody>
+					</table>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button class="btn btn-secondary" id="doneAddModal">Done</button>
+			</div>
+		</div>
+	</div>
+
+	<!-- Assign Task Modal -->
+	<div id="assignTaskModal" class="modal-overlay">
+		<div class="modal-card">
+			<div class="modal-header">
+				<h6 class="m-0">Assign Task to <span id="assignUserName"></span></h6>
+				<button class="btn btn-sm btn-outline-secondary" id="closeAssignModal">Close</button>
+			</div>
+			<div class="modal-body">
+				<div class="row g-2">
+					<div class="col-md-6">
+						<label class="form-label small">Project</label>
+						<select id="assignProject" class="form-select"></select>
+					</div>
+					<div class="col-md-6">
+						<label class="form-label small">Module</label>
+						<select id="assignModule" class="form-select"></select>
+					</div>
+					<div class="col-md-6">
+						<label class="form-label small">Task name</label>
+						<input id="assignTaskName" class="form-control" placeholder="Enter task name">
+					</div>
+					<div class="col-md-6">
+						<label class="form-label small">Status</label>
+						<select id="assignStatus" class="form-select"><option>pending</option><option>in-progress</option><option>completed</option></select>
+					</div>
+					<div class="col-12">
+						<label class="form-label small">Description</label>
+						<textarea id="assignDesc" class="form-control" rows="3" placeholder="Optional description"></textarea>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button class="btn btn-secondary" id="cancelAssignModal">Cancel</button>
+				<button class="btn btn-primary" id="saveAssignBtn">Assign Task</button>
+			</div>
+		</div>
+	</div>
+
+	<script>
+	async function guard(){
+		const res = await fetch('/api/auth/me', { credentials:'include' });
+		if (!res.ok) { window.location.href='/pages/login.html'; return false; }
+		const me = await res.json();
+		if (me.role !== 'leader' && me.role !== 'admin') { window.location.href='/pages/error.html'; return false; }
+		return true;
+	}
+
+	let cachedAvailable = [];
+
+	async function loadMembers(){
+		const [membersRes, availableRes] = await Promise.all([
+			fetch('/api/teams/members', { credentials:'include' }),
+			fetch('/api/teams/available-users', { credentials:'include' })
+		]);
+		const members = await membersRes.json();
+		cachedAvailable = await availableRes.json();
+		document.getElementById('members').innerHTML = members.map(m=>
+			`<a href="#" class="list-group-item d-flex justify-content-between align-items-center" data-user="${m.id}" data-name="${m.name}">
+				<span>
+					<strong>${m.name}</strong> <span class="badge badge-role">${m.role}</span>
+					<div class="small text-light opacity-75">${m.email}</div>
+				</span>
+				<span class="d-flex gap-2">
+					<button class="btn btn-sm btn-outline-light" data-view="${m.id}">Tasks</button>
+					<button class="btn btn-sm btn-primary" data-assign="${m.id}" data-name="${m.name}">Assign</button>
+				</span>
+			</a>`
+		).join('') || '<div class="text-muted">No members yet.</div>';
+		// Prepare modal list with current cache
+		renderAvailableUsers(cachedAvailable);
+	}
+
+	function openAddModal(){
+		document.getElementById('userSearch').value = '';
+		renderAvailableUsers(cachedAvailable);
+		document.getElementById('addMemberModal').style.display = 'flex';
+	}
+	function closeAddModal(){ document.getElementById('addMemberModal').style.display = 'none'; }
+
+	function renderAvailableUsers(list){
+		const tbody = document.querySelector('#availUsersTable tbody');
+		const q = (document.getElementById('userSearch')?.value || '').toLowerCase();
+		const filtered = (Array.isArray(list) ? list : []).filter(u=> !q || u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q));
+		document.getElementById('availCount').textContent = `${filtered.length} users`;
+		tbody.innerHTML = filtered.map(u=>`<tr data-user="${u.id}"><td>${u.name}</td><td>${u.email}</td><td>${u.role}</td><td><button class="btn btn-sm btn-primary" data-add="${u.id}">Add</button></td></tr>`).join('') || '<tr><td colspan="4" class="text-center text-muted">No available users</td></tr>';
+	}
+
+	async function addMember(userId){
+		try{
+			const res = await fetch('/api/teams/members', { method:'POST', headers:{'Content-Type':'application/json'}, credentials:'include', body: JSON.stringify({ user_id: Number(userId) }) });
+			if (!res.ok){
+				let msg = 'Failed to add member';
+				try{ const data = await res.json(); if (data.message) msg = data.message; }catch{}
+				alert(msg); return;
+			}
+			await loadMembers();
+			renderAvailableUsers(cachedAvailable);
+		} catch(e){ alert('Network error'); }
+	}
+
+	// Assign Task workflow
+	let assignTargetUserId = null;
+	async function openAssignModal(userId, userName){
+		assignTargetUserId = Number(userId);
+		document.getElementById('assignUserName').textContent = userName || '';
+		document.getElementById('assignTaskName').value = '';
+		document.getElementById('assignDesc').value = '';
+		document.getElementById('assignStatus').value = 'pending';
+		await populateProjectsAndModules();
+		document.getElementById('assignTaskModal').style.display = 'flex';
+	}
+
+	async function populateProjectsAndModules(){
+		const projRes = await fetch('/api/projects', { credentials:'include' });
+		const projects = await projRes.json();
+		const projSel = document.getElementById('assignProject');
+		projSel.innerHTML = projects.map(p=>`<option value="${p.id}">${p.title}</option>`).join('');
+		if (projects.length){
+			projSel.value = projects[0].id;
+			await populateModules(projects[0].id);
+		}else{
+			document.getElementById('assignModule').innerHTML = '<option value="">No modules</option>';
+		}
+	}
+
+	async function populateModules(projectId){
+		const modRes = await fetch(`/api/projects/${projectId}/modules`, { credentials:'include' });
+		const mods = await modRes.json();
+		const modSel = document.getElementById('assignModule');
+		modSel.innerHTML = mods.map(m=>`<option value="${m.id}">${m.module_name}</option>`).join('') || '<option value="">No modules</option>';
+	}
+
+	async function saveAssignment(){
+		const moduleId = document.getElementById('assignModule').value;
+		const taskName = document.getElementById('assignTaskName').value.trim();
+		const desc = document.getElementById('assignDesc').value.trim();
+		const status = document.getElementById('assignStatus').value;
+		if (!assignTargetUserId) { alert('No member selected'); return; }
+		if (!moduleId) { alert('Please select a module'); return; }
+		if (taskName.length < 2) { alert('Enter a task name (min 2 chars)'); return; }
+		const btn = document.getElementById('saveAssignBtn'); btn.disabled = true; btn.textContent = 'Assigning...';
+		try{
+			const res = await fetch(`/api/projects/modules/${moduleId}/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, credentials:'include', body: JSON.stringify({ task_name: taskName, description: desc, assigned_to: assignTargetUserId, status }) });
+			if (!res.ok){ let msg='Failed to assign task'; try{ const d = await res.json(); if (d.message) msg=d.message; }catch{} alert(msg); return; }
+			closeAssignModal();
+			// refresh tasks view for that user if currently selected
+			loadMemberTasks(assignTargetUserId);
+		} finally { btn.disabled = false; btn.textContent = 'Assign Task'; }
+	}
+
+	async function loadMemberTasks(userId){
+		const res = await fetch(`/api/teams/member-tasks?userId=${userId}`, { credentials:'include' });
+		const tasks = await res.json();
+		document.getElementById('memberTasks').innerHTML = tasks.map(t=>
+			`<div class='col-md-4'>
+				<div class='card glass p-2'>
+					<div class='small text-muted'>${t.project_title} / ${t.module_name}</div>
+					<strong>${t.task_name}</strong>
+					<div><span class='badge bg-secondary'>${t.status}</span></div>
+				</div>
+			</div>`
+		).join('') || '<div class="text-muted">No tasks for this member.</div>';
+	}
+
+	// Team projects
+	async function loadTeamProjects(){
+		const res = await fetch('/api/teams/projects', { credentials:'include' });
+		const list = await res.json();
+		document.getElementById('teamProjects').innerHTML = list.map(p=>
+			`<div class='col-md-4'>
+				<div class='card glass p-3'>
+					<h6 class='mb-2'>${p.title}</h6>
+					<div class='small text-muted mb-1'>Status: ${p.status}</div>
+					<div class='progress' style='height:8px;'>
+						<div class='progress-bar' style='width:${p.progress || 0}%'></div>
+					</div>
+				</div>
+			</div>`
+		).join('') || '<div class="text-muted">No projects found.</div>';
+	}
+
+	guard().then(ok=>{ if (ok) { loadMembers(); loadTeamProjects(); } });
+	document.getElementById('refreshMembers').addEventListener('click', loadMembers);
+	document.getElementById('refreshTeamProjects').addEventListener('click', loadTeamProjects);
+	document.getElementById('addMemberBtn').addEventListener('click', openAddModal);
+	document.getElementById('logoutBtn').onclick = async ()=>{ await fetch('/api/auth/logout', { method:'POST', credentials:'include' }); window.location.href='/pages/login.html'; };
+	document.getElementById('members').addEventListener('click', (e)=>{
+		e.preventDefault();
+		const row = e.target.closest('[data-user]');
+		if (row) loadMemberTasks(row.dataset.user);
+	});
+	document.getElementById('closeAddModal').addEventListener('click', closeAddModal);
+	document.getElementById('doneAddModal').addEventListener('click', closeAddModal);
+	document.getElementById('userSearch').addEventListener('input', ()=> renderAvailableUsers(cachedAvailable));
+	document.querySelector('#availUsersTable tbody').addEventListener('click', (e)=>{
+		const btn = e.target.closest('[data-add]');
+		if (btn){ addMember(btn.dataset.add); }
+	});
+	// Assign modal events
+	document.getElementById('assignProject').addEventListener('change', (e)=> populateModules(e.target.value));
+	document.getElementById('saveAssignBtn').addEventListener('click', saveAssignment);
+	function closeAssignModal(){ document.getElementById('assignTaskModal').style.display = 'none'; }
+	document.getElementById('closeAssignModal').addEventListener('click', closeAssignModal);
+	document.getElementById('cancelAssignModal').addEventListener('click', closeAssignModal);
+	// Member list buttons
+	document.getElementById('members').addEventListener('click', (e)=>{
+		const btnAssign = e.target.closest('[data-assign]');
+		const btnView = e.target.closest('[data-view]');
+		if (btnAssign){ openAssignModal(btnAssign.dataset.assign, btnAssign.dataset.name); e.preventDefault(); }
+		if (btnView){ loadMemberTasks(btnView.dataset.view); e.preventDefault(); }
+	});
+	</script>
+</body>
+</html>

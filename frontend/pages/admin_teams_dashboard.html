@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Teams Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/assets/css/admin.css">
+  <style>
+    .team-dashboard {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      position: relative;
+    }
+    
+    .team-dashboard::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('https://images.unsplash.com/photo-1526378722484-bd91ca387e72?auto=format&fit=crop&w=1920&q=80');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      opacity: 0.1;
+      z-index: 1;
+    }
+    
+    .team-dashboard > * {
+      position: relative;
+      z-index: 2;
+    }
+    
+    .team-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+      border: none;
+      overflow: hidden;
+      position: relative;
+    }
+    
+    .team-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #007bff, #0056b3);
+      transform: scaleX(0);
+      transition: transform 0.3s ease;
+    }
+    
+    .team-card:hover::before {
+      transform: scaleX(1);
+    }
+    
+    .team-card:hover {
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+    
+    .team-card.selected {
+      border: 3px solid #007bff;
+      transform: translateY(-5px);
+      box-shadow: 0 15px 35px rgba(0, 123, 255, 0.4);
+    }
+    
+    .team-card.selected::before {
+      transform: scaleX(1);
+    }
+    
+    .team-leader {
+      background: linear-gradient(135deg, #007bff, #0056b3);
+      color: white;
+      padding: 25px 20px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .team-leader::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+      transform: rotate(45deg);
+    }
+    
+    .team-leader i {
+      font-size: 2.5rem;
+      margin-bottom: 15px;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .team-leader h5 {
+      font-weight: 600;
+      margin-bottom: 5px;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .team-stats {
+      padding: 20px 15px;
+      background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+      border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    
+    .team-details {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      padding: 30px;
+      margin-top: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .member-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 15px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border-left: 4px solid transparent;
+    }
+    
+    .member-card:hover {
+      transform: translateX(8px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+      border-left-color: #007bff;
+    }
+    
+    .project-badge {
+      background: linear-gradient(135deg, #e9ecef, #dee2e6);
+      border-radius: 25px;
+      padding: 8px 18px;
+      margin: 5px;
+      display: inline-block;
+      font-size: 0.9rem;
+      font-weight: 500;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+    }
+    
+    .project-badge:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    .stats-card {
+      background: linear-gradient(135deg, #28a745, #20c997);
+      color: white;
+      border-radius: 15px;
+      padding: 25px 20px;
+      text-align: center;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .stats-card::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+      transform: rotate(45deg);
+    }
+    
+    .stats-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 30px rgba(40, 167, 69, 0.4);
+    }
+    
+    .stats-card h3 {
+      font-size: 2.8rem;
+      font-weight: bold;
+      margin: 0;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .stats-card small {
+      position: relative;
+      z-index: 1;
+      opacity: 0.9;
+    }
+    
+    .loading-spinner {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 200px;
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: rgba(255, 255, 255, 0.8);
+    }
+    
+    .empty-state i {
+      font-size: 4rem;
+      margin-bottom: 20px;
+      opacity: 0.6;
+    }
+    
+    .empty-state h3 {
+      color: white;
+      font-weight: 600;
+    }
+    
+    .search-box {
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 25px;
+      padding: 12px 25px;
+      color: white;
+      width: 320px;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+    
+    .search-box::placeholder {
+      color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .search-box:focus {
+      background: rgba(255, 255, 255, 0.25);
+      border-color: rgba(255, 255, 255, 0.5);
+      outline: none;
+      color: white;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+    }
+    
+    @media (max-width: 768px) {
+      .team-card {
+        margin-bottom: 15px;
+      }
+      
+      .team-details {
+        padding: 20px;
+        margin-top: 15px;
+      }
+      
+      .search-box {
+        width: 100%;
+        margin-bottom: 15px;
+      }
+      
+      .stats-card h3 {
+        font-size: 2rem;
+      }
+    }
+  </style>
+</head>
+<body class="team-dashboard">
+  <!-- Navbar -->
+  <nav class="navbar navbar-dark bg-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/pages/admin_dashboard.html">
+        <i class="fas fa-arrow-left me-2"></i>Admin Teams Dashboard
+      </a>
+      <div class="d-flex gap-2">
+        <input type="text" class="form-control search-box" id="searchInput" placeholder="Search teams by leader name or email...">
+        <button class="btn btn-light" id="logoutBtn">
+          <i class="fas fa-sign-out-alt me-1"></i>Logout
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="container-fluid py-4">
+    <div class="row">
+      <!-- Left Column - Team List -->
+      <div class="col-lg-5">
+        <div class="mb-4">
+          <h2 class="text-white mb-3">
+            <i class="fas fa-users me-2"></i>Company Teams
+          </h2>
+          <div id="teamsList" class="row g-3">
+            <!-- Teams will be loaded here -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column - Team Details -->
+      <div class="col-lg-7">
+        <div id="teamDetails" class="team-details">
+          <div class="text-center py-5">
+            <i class="fas fa-hand-pointer fa-3x text-muted mb-3"></i>
+            <h4>Select a team to view details</h4>
+            <p class="text-muted">Click on any team card from the left to see team leader, members, and projects.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    let allTeams = [];
+    let selectedTeamId = null;
+
+    async function guard() {
+      try {
+        const res = await fetch('/api/auth/me', { credentials: 'include' });
+        if (!res.ok) {
+          window.location.href = '/pages/login.html';
+          return false;
+        }
+        const me = await res.json();
+        if (me.role !== 'admin') {
+          window.location.href = '/pages/error.html';
+          return false;
+        }
+        return true;
+      } catch (error) {
+        window.location.href = '/pages/login.html';
+        return false;
+      }
+    }
+
+    async function loadTeams() {
+      try {
+        const teamsList = document.getElementById('teamsList');
+        teamsList.innerHTML = `
+          <div class="col-12">
+            <div class="loading-spinner">
+              <div class="spinner-border text-light" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+            </div>
+          </div>
+        `;
+
+        const response = await fetch('/api/teams/admin/all-teams', {
+          method: 'GET',
+          credentials: 'include'
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to load teams');
+        }
+
+        allTeams = await response.json();
+        renderTeams(allTeams);
+      } catch (error) {
+        console.error('Error loading teams:', error);
+        document.getElementById('teamsList').innerHTML = `
+          <div class="col-12">
+            <div class="empty-state">
+              <i class="fas fa-exclamation-triangle"></i>
+              <h3>Error Loading Teams</h3>
+              <p>Please try again later.</p>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    function renderTeams(teams) {
+      const teamsList = document.getElementById('teamsList');
+      
+      if (teams.length === 0) {
+        teamsList.innerHTML = `
+          <div class="col-12">
+            <div class="empty-state">
+              <i class="fas fa-users-slash"></i>
+              <h3>No Teams Found</h3>
+              <p>There are no teams configured in the system.</p>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      teamsList.innerHTML = teams.map(team => `
+        <div class="col-12" data-team-id="${team.leader.id}">
+          <div class="team-card ${selectedTeamId === team.leader.id ? 'selected' : ''}" onclick="selectTeam(${team.leader.id})">
+            <div class="team-leader">
+              <i class="fas fa-user-tie"></i>
+              <h5>${team.leader.name}</h5>
+              <small>${team.leader.email}</small>
+            </div>
+            <div class="team-stats">
+              <div class="row text-center">
+                <div class="col-6">
+                  <i class="fas fa-users text-primary"></i>
+                  <div class="fw-bold">${team.memberCount}</div>
+                  <small>Members</small>
+                </div>
+                <div class="col-6">
+                  <i class="fas fa-project-diagram text-success"></i>
+                  <div class="fw-bold" id="projectCount-${team.leader.id}">-</div>
+                  <small>Projects</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `).join('');
+
+      // Load project counts for all teams
+      teams.forEach(team => {
+        loadProjectCount(team.leader.id);
+      });
+    }
+
+    async function loadProjectCount(leaderId) {
+      try {
+        const response = await fetch(`/api/teams/projects?leaderId=${leaderId}`, {
+          method: 'GET',
+          credentials: 'include'
+        });
+        
+        if (response.ok) {
+          const projects = await response.json();
+          const projectCountElement = document.getElementById(`projectCount-${leaderId}`);
+          if (projectCountElement) {
+            projectCountElement.textContent = projects.length;
+          }
+        }
+      } catch (error) {
+        console.error('Error loading project count:', error);
+      }
+    }
+
+    async function selectTeam(leaderId) {
+      selectedTeamId = leaderId;
+      
+      // Update selected state
+      document.querySelectorAll('.team-card').forEach(card => {
+        card.classList.remove('selected');
+      });
+      document.querySelector(`[data-team-id="${leaderId}"] .team-card`).classList.add('selected');
+
+      try {
+        const teamDetails = document.getElementById('teamDetails');
+        teamDetails.innerHTML = `
+          <div class="loading-spinner">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+          </div>
+        `;
+
+        const response = await fetch(`/api/teams/admin/team-details/${leaderId}`, {
+          method: 'GET',
+          credentials: 'include'
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to load team details');
+        }
+
+        const teamData = await response.json();
+        renderTeamDetails(teamData);
+      } catch (error) {
+        console.error('Error loading team details:', error);
+        document.getElementById('teamDetails').innerHTML = `
+          <div class="text-center py-5">
+            <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
+            <h4>Error Loading Team Details</h4>
+            <p class="text-muted">Please try again later.</p>
+          </div>
+        `;
+      }
+    }
+
+    function renderTeamDetails(teamData) {
+      const teamDetails = document.getElementById('teamDetails');
+      
+      teamDetails.innerHTML = `
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h3><i class="fas fa-users me-2"></i>Team Details</h3>
+          <span class="badge bg-primary fs-6">${teamData.leader.name}'s Team</span>
+        </div>
+
+        <!-- Team Leader Info -->
+        <div class="stats-card mb-4">
+          <div class="row align-items-center">
+            <div class="col-md-8">
+              <h4><i class="fas fa-crown me-2"></i>Team Leader</h4>
+              <h5>${teamData.leader.name}</h5>
+              <p class="mb-0">${teamData.leader.email}</p>
+              <small>Role: ${teamData.leader.role}</small>
+            </div>
+            <div class="col-md-4 text-end">
+              <h3>${teamData.memberCount}</h3>
+              <small>Team Members</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Team Members -->
+        <div class="mb-4">
+          <h4 class="mb-3"><i class="fas fa-users me-2"></i>Team Members</h4>
+          <div id="membersList">
+            ${teamData.members.length === 0 ? 
+              '<p class="text-muted">No team members found.</p>' :
+              teamData.members.map(member => `
+                <div class="member-card">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <h5 class="mb-1">${member.name}</h5>
+                      <p class="mb-0 text-muted">${member.email}</p>
+                      <small class="badge bg-secondary">${member.role}</small>
+                    </div>
+                    <i class="fas fa-user fa-2x text-primary"></i>
+                  </div>
+                </div>
+              `).join('')
+            }
+          </div>
+        </div>
+
+        <!-- Team Projects -->
+        <div>
+          <h4 class="mb-3"><i class="fas fa-project-diagram me-2"></i>Associated Projects</h4>
+          <div id="projectsList">
+            ${teamData.projects.length === 0 ? 
+              '<p class="text-muted">No projects associated with this team.</p>' :
+              '<div class="d-flex flex-wrap">' + 
+                teamData.projects.map(project => `
+                  <span class="project-badge">
+                    <i class="fas fa-tasks me-1"></i>${project.name}
+                  </span>
+                `).join('') + 
+              '</div>'
+            }
+          </div>
+        </div>
+      `;
+    }
+
+    function filterTeams() {
+      const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+      const filteredTeams = allTeams.filter(team => 
+        team.leader.name.toLowerCase().includes(searchTerm) ||
+        team.leader.email.toLowerCase().includes(searchTerm)
+      );
+      renderTeams(filteredTeams);
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', async () => {
+      const isAuthenticated = await guard();
+      if (isAuthenticated) {
+        await loadTeams();
+      }
+    });
+
+    // Event listeners
+    document.getElementById('searchInput').addEventListener('input', filterTeams);
+
+    document.getElementById('logoutBtn').onclick = async () => {
+      try {
+        await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+        window.location.href = '/pages/login.html';
+      } catch (error) {
+        console.error('Logout error:', error);
+        window.location.href = '/pages/login.html';
+      }
+    };
+  </script>
+</body>
+</html>

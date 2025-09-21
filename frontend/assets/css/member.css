@@ -1,0 +1,20 @@
+/* Member pages */
+.task-card { border-left: 3px solid var(--pes-accent-3); }
+.status-badge { padding: 4px 10px; border-radius: 999px; }
+.status-badge.pending { background: rgba(148,163,184,0.2); }
+.status-badge.in-progress { background: rgba(34,211,238,0.2); }
+.status-badge.completed { background: rgba(52,211,153,0.2); }
+
+/* Ensure high contrast text on dark backgrounds */
+body, .container, .card, .card-body, .navbar, .table, label, .form-label {
+	color: var(--pes-text) !important;
+}
+a { color: var(--pes-accent); }
+a:hover { color: var(--pes-accent-2); }
+
+/* Form controls readable text */
+.form-select, .form-control { color: var(--pes-text) !important; }
+.form-select option { color: #0b1220; background: #ffffff; }
+
+/* Badges text contrast */
+.badge, .status-badge { color: var(--pes-text) !important; }

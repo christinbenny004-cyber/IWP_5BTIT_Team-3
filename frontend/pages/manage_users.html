@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Manage Users</title>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link href="/assets/css/style.css" rel="stylesheet">
+	<link href="/assets/css/templatemo-neural-style.css" rel="stylesheet">
+	<style>
+		/* Background */
+		body.page-bg {
+			position: relative;
+			min-height: 100vh;
+			background-image: url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1920&q=80');
+			background-size: cover;
+			background-position: center;
+			background-attachment: fixed;
+			color: #f8f9fa;
+			font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+		}
+		body.page-bg::before {
+			content: '';
+			position: fixed;
+			inset: 0;
+			background: linear-gradient(180deg, rgba(0,0,0,0.65), rgba(0,0,0,0.85));
+			z-index: -1;
+		}
+
+		/* Glassmorphism card */
+		.glass-card {
+			background: rgba(255, 255, 255, 0.08);
+			backdrop-filter: blur(12px);
+			-webkit-backdrop-filter: blur(12px);
+			border: 1px solid rgba(255, 255, 255, 0.15);
+			border-radius: 18px;
+			box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+			padding: 26px;
+			transition: transform 0.3s ease, box-shadow 0.3s ease;
+		}
+		.glass-card:hover {
+			transform: translateY(-4px);
+			box-shadow: 0 15px 50px rgba(0,0,0,0.6);
+		}
+		.glass-card h3 {
+			color: #ffffff;
+			margin-bottom: 0;
+			font-weight: 700;
+			text-transform: uppercase;
+			position: relative;
+			display: inline-block;
+		}
+		.glass-card h3::after {
+			content: '';
+			position: absolute;
+			left: 0;
+			bottom: -6px;
+			width: 100%;
+			height: 3px;
+			background: linear-gradient(90deg, #0d6efd, #6f42c1);
+			border-radius: 2px;
+		}
+
+		/* Form styling */
+		.glass-card .form-control,
+		.glass-card .form-select {
+			background: rgba(255, 255, 255, 0.95);
+			border: 1px solid rgba(0, 0, 0, 0.1);
+			color: #212529;
+			border-radius: 8px;
+			transition: box-shadow 0.3s ease;
+		}
+		.glass-card .form-control:focus,
+		.glass-card .form-select:focus {
+			box-shadow: 0 0 10px rgba(13, 110, 253, 0.6);
+		}
+		.glass-card .form-control::placeholder {
+			color: #6c757d;
+		}
+
+		/* Buttons */
+		.btn {
+			transition: all 0.3s ease;
+			border-radius: 8px;
+			font-weight: 500;
+		}
+		.btn:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+		}
+		.btn-primary {
+			background: linear-gradient(45deg, #0d6efd, #6f42c1);
+			border: none;
+		}
+		.btn-dark {
+			background: linear-gradient(45deg, #212529, #495057);
+			border: none;
+		}
+
+		/* Table styling */
+		.glass-card .table {
+			color: #f8f9fa;
+			vertical-align: middle;
+		}
+		.glass-card .table thead th {
+			background: rgba(255, 255, 255, 0.12);
+			color: #ffffff;
+			border-color: rgba(255, 255, 255, 0.25);
+		}
+		.glass-card .table tbody tr {
+			transition: transform 0.2s ease, background 0.2s ease;
+		}
+		.glass-card .table tbody tr:hover {
+			background: rgba(255, 255, 255, 0.07);
+			transform: scale(1.01);
+		}
+		.glass-card .table-bordered>:not(caption)>* {
+			border-color: rgba(255, 255, 255, 0.25);
+		}
+
+		/* Role badge */
+		.role-badge {
+			padding: 4px 10px;
+			border-radius: 12px;
+			font-size: 0.85rem;
+			font-weight: 600;
+			color: #fff;
+		}
+		.role-admin { background: linear-gradient(45deg, #dc3545, #b21f2d); }
+		.role-leader { background: linear-gradient(45deg, #198754, #0f5132); }
+		.role-member { background: linear-gradient(45deg, #0d6efd, #0a58ca); }
+	</style>
+</head>
+<body class="page-bg">
+	<div class="container my-4 glass-card">
+		<div class="d-flex justify-content-between align-items-center mb-3">
+			<h3>Manage Users</h3>
+			<div class="d-flex gap-2">
+				<a class="btn btn-outline-light" href="/pages/admin_dashboard.html">⬅ Back</a>
+				<button class="btn btn-dark" id="logoutBtn">Logout</button>
+			</div>
+		</div>
+		<div id="errorBox" class="alert alert-danger d-none" role="alert"></div>
+		<!-- Filters -->
+		<div class="row g-2 mb-3">
+			<div class="col-md-6">
+				<input class="form-control" id="userFilter" placeholder="Search by name or email">
+			</div>
+			<div class="col-md-3">
+				<select id="roleFilter" class="form-select">
+					<option value="">All roles</option>
+					<option value="member">Member</option>
+					<option value="leader">Leader</option>
+					<option value="admin">Admin</option>
+				</select>
+			</div>
+			<div class="col-md-3 text-muted d-flex align-items-center">
+				<span class="small" id="userCount"></span>
+			</div>
+		</div>
+		<!-- User input form -->
+		<div class="row g-2 mb-3">
+			<div class="col-md-3"><input class="form-control" id="name" placeholder="Name"></div>
+			<div class="col-md-3"><input class="form-control" id="email" placeholder="Email"></div>
+			<div class="col-md-3"><input class="form-control" id="password" type="password" placeholder="Password"></div>
+			<div class="col-md-2">
+				<select id="role" class="form-select">
+					<option value="member">Member</option>
+					<option value="leader">Leader</option>
+					<option value="admin">Admin</option>
+				</select>
+			</div>
+			<div class="col-md-1"><button class="btn btn-primary w-100" id="add">Add</button></div>
+		</div>
+
+		<!-- Users Table -->
+		<div id="tableWrap">
+			<table class="table table-bordered table-hover" id="tbl">
+				<thead>
+					<tr>
+						<th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>Active</th><th>Actions</th>
+					</tr>
+				</thead>
+				<tbody></tbody>
+			</table>
+		</div>
+	</div>
+
+	<script src="/assets/js/ui.js"></script>
+	<script>
+	async function guard(){
+		const res = await fetch('/api/auth/me', { credentials:'include' });
+		if (!res.ok) { window.location.href='/pages/login.html'; return false; }
+		const me = await res.json();
+		if (me.role !== 'admin') { window.location.href='/pages/error.html'; return false; }
+		return true;
+	}
+	async function load(){
+		const wrap = document.getElementById('tableWrap'); showSkeleton(wrap);
+		const res = await fetch('/api/users', { credentials:'include' });
+		if (!res.ok) { showToast('Unauthorized','error'); window.location.href='/pages/login.html'; return; }
+		const users = await res.json();
+		document.querySelector('#tbl tbody').innerHTML = users.map(u=>{
+			let roleClass = u.role === 'admin' ? 'role-admin' : u.role === 'leader' ? 'role-leader' : 'role-member';
+			return `<tr>
+				<td>${u.id}</td>
+				<td>${u.name}</td>
+				<td>${u.email}</td>
+				<td><span class="role-badge ${roleClass}">${u.role}</span></td>
+				<td>${u.active ? '✅' : '❌'}</td>
+				<td>
+					<button class='btn btn-sm btn-warning' data-toggle='${u.id}' data-active='${u.active ? 0 : 1}'>${u.active ? 'Deactivate' : 'Activate'}</button>
+					<button class='btn btn-sm btn-secondary' data-role='${u.id}'>Toggle Role</button>
+					<button class='btn btn-sm btn-danger' data-del='${u.id}'>Delete</button>
+				</td>
+			</tr>`;
+		}).join('');
+		hideSkeleton(wrap);
+		applyFilters();
+	}
+
+	function applyFilters(){
+		const q = (document.getElementById('userFilter')?.value || '').toLowerCase().trim();
+		const role = document.getElementById('roleFilter')?.value || '';
+		let visible = 0; let total = 0;
+		const tbody = document.querySelector('#tbl tbody');
+		for (const row of tbody.rows){
+			total++;
+			const name = row.cells[1].innerText.toLowerCase();
+			const email = row.cells[2].innerText.toLowerCase();
+			const r = row.cells[3].innerText.toLowerCase();
+			const matchesText = !q || name.includes(q) || email.includes(q);
+			const matchesRole = !role || r.includes(role);
+			const show = matchesText && matchesRole;
+			row.style.display = show ? '' : 'none';
+			if (show) visible++;
+		}
+		const countEl = document.getElementById('userCount');
+		if (countEl) countEl.textContent = `${visible} / ${total} shown`;
+	}
+
+	document.addEventListener('input', (e)=>{
+		if (e.target && (e.target.id === 'userFilter')) applyFilters();
+	});
+	document.addEventListener('change', (e)=>{
+		if (e.target && (e.target.id === 'roleFilter')) applyFilters();
+	});
+
+	document.getElementById('add').onclick = async ()=>{
+		const inputName = document.getElementById('name').value.trim();
+		const inputEmail = document.getElementById('email').value.trim();
+		const inputPassword = document.getElementById('password').value;
+		const inputRole = document.getElementById('role').value;
+		// Client validation
+		if (inputName.length < 2) { showToast('Name must be at least 2 characters','error'); return; }
+		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+		if (!emailRegex.test(inputEmail)) { showToast('Please enter a valid email','error'); return; }
+		if (inputPassword.length < 6) { showToast('Password must be at least 6 characters','error'); return; }
+		const btn = document.getElementById('add');
+		btn.disabled = true; btn.innerText = 'Adding...';
+		try{
+			const payload = { name: inputName, email: inputEmail, password: inputPassword, role: inputRole };
+			const res = await fetch('/api/users', { method:'POST', headers:{'Content-Type':'application/json'}, credentials:'include', body: JSON.stringify(payload) });
+			if (!res.ok) {
+				let detail = '';
+				try{ const data = await res.json(); detail = data?.errors?.[0]?.msg || data?.message || ''; }catch{}
+				showToast(`Failed to add user${detail ? ': ' + detail : ''}`,'error');
+				return;
+			}
+			showToast('User added','success');
+			document.getElementById('name').value='';
+			document.getElementById('email').value='';
+			document.getElementById('password').value='';
+			document.getElementById('role').value='member';
+			load();
+		} finally {
+			btn.disabled = false; btn.innerText = 'Add';
+		}
+	};
+
+	// Improve load error reporting
+	(async()=>{
+		const box = document.getElementById('errorBox');
+		try{ /* no-op, placeholder to keep box in DOM */ }catch(e){ box?.classList.remove('d-none'); box.textContent = 'Unexpected error loading page.'; }
+	})();
+	document.addEventListener('click', async (e)=>{
+		if (e.target.dataset.toggle){
+			await fetch('/api/users/'+e.target.dataset.toggle, { method:'PUT', headers:{'Content-Type':'application/json'}, credentials:'include', body: JSON.stringify({ active: Number(e.target.dataset.active) }) });
+			showToast('User status updated','success');
+			load();
+		}
+		if (e.target.dataset.role){
+			const id = e.target.dataset.role;
+			const currentRole = e.target.closest('tr').children[3].innerText;
+			const next = currentRole.includes('member') ? 'leader' : 'member';
+			await fetch('/api/users/'+id, { method:'PUT', headers:{'Content-Type':'application/json'}, credentials:'include', body: JSON.stringify({ role: next }) });
+			showToast('Role updated','success');
+			load();
+		}
+		if (e.target.dataset.del){
+			if (!(await confirmModal('Delete this user?'))) return;
+			await fetch('/api/users/'+e.target.dataset.del, { method:'DELETE', credentials:'include' });
+			showToast('User deleted','success');
+			load();
+		}
+	});
+	document.getElementById('logoutBtn').onclick = async ()=>{
+		await fetch('/api/auth/logout', { method:'POST', credentials:'include' });
+		showToast('Logged out','info');
+		window.location.href = '/pages/login.html';
+	};
+	guard().then(ok=>{ if (ok) load(); });
+	</script>
+</body>
+</html>
